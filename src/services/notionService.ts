@@ -1,17 +1,14 @@
 import { Client } from '@notionhq/client';
 import type { Nippo } from '../types/nippo';
 
-// Note: In production, these should be environment variables
-const NOTION_TOKEN = localStorage.getItem('notion_token') || '';
-const NOTION_DATABASE_ID = localStorage.getItem('notion_database_id') || '';
-
 class NotionService {
   private client: Client | null = null;
 
   constructor() {
-    if (NOTION_TOKEN) {
+    const token = localStorage.getItem('notion_token');
+    if (token) {
       this.client = new Client({
-        auth: NOTION_TOKEN,
+        auth: token,
       });
     }
   }
@@ -25,11 +22,14 @@ class NotionService {
   }
 
   isConfigured(): boolean {
-    return Boolean(this.client && NOTION_TOKEN && NOTION_DATABASE_ID);
+    const token = localStorage.getItem('notion_token');
+    const databaseId = localStorage.getItem('notion_database_id');
+    return Boolean(this.client && token && databaseId);
   }
 
   async createPage(nippo: Nippo): Promise<string | null> {
-    if (!this.client || !NOTION_DATABASE_ID) {
+    const databaseId = localStorage.getItem('notion_database_id');
+    if (!this.client || !databaseId) {
       console.warn('Notion not configured');
       return null;
     }
@@ -37,7 +37,7 @@ class NotionService {
     try {
       const response = await this.client.pages.create({
         parent: {
-          database_id: NOTION_DATABASE_ID,
+          database_id: databaseId,
         },
         properties: {
           Name: {
